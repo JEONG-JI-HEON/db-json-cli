@@ -5,11 +5,11 @@
   "description": "Lightweight JSON-based backend server with JWT authentication and CLI support",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/db-json-cli.git"
+    "url": "https://github.com/JEONG-JI-HEON/db-json-cli.git"
   },
-  "homepage": "https://github.com/your-username/db-json-cli#readme",
+  "homepage": "https://github.com/JEONG-JI-HEON/db-json-cli#readme",
   "bugs": {
-    "url": "https://github.com/your-username/db-json-cli/issues"
+    "url": "https://github.com/JEONG-JI-HEON/db-json-cli/issues"
   },
   "keywords": [
     "json-server",
