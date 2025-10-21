@@ -1,0 +1,38 @@
+{
+  "name": "db-json-cli",
+  "version": "1.0.1",
+  "license": "MIT",
+  "description": "Lightweight JSON-based backend server with JWT authentication and CLI support",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/db-json-cli.git"
+  },
+  "homepage": "https://github.com/your-username/db-json-cli#readme",
+  "bugs": {
+    "url": "https://github.com/your-username/db-json-cli/issues"
+  },
+  "keywords": [
+    "json-server",
+    "cli",
+    "jwt",
+    "mock-server",
+    "express",
+    "api"
+  ],
+  "bin": {
+    "db-json-cli": "./bin/db-json-cli.js"
+  },
+  "type": "module",
+  "scripts": {
+    "start": "node bin/db-json-cli.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "fs-extra": "^11.1.1",
+    "jsonwebtoken": "^9.0.0",
+    "yargs": "^18.0.0"
+  }
+}
