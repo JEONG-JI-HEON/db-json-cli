@@ -4,18 +4,47 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import { hashPassword, comparePassword, generateTokens, authMiddleware } from "./auth.js";
 
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 export const startServer = async (dbPath, port = 4000) => {
   const app = express();
   app.use(cors());
   app.use(bodyParser.json());
 
-  // JSON Load
-  let db = { users: [], rules: {} };
+  // EJS 설정
+  app.set("view engine", "ejs");
+  app.set("views", __dirname);
+
+  app.use(express.static("public"));
+
+  let db = {
+    users: [],
+    rules: { test1: "public", test2: "private", test3: "public" },
+    test1: [
+      { id: 1, message: "good" },
+      { id: 2, message: "good" },
+      { id: 3, message: "good" },
+    ],
+    test2: [
+      { id: 1, message: "good" },
+      { id: 2, message: "good" },
+      { id: 3, message: "good" },
+    ],
+    test3: [
+      { id: 1, message: "good" },
+      { id: 2, message: "good" },
+      { id: 3, message: "good" },
+    ],
+  };
   if (fs.existsSync(dbPath)) db = await fs.readJson(dbPath);
 
   const saveDB = async () => fs.writeJson(dbPath, db, { spaces: 2 });
 
-  // 🔹 REGISTER
+  // REGISTER
   app.post("/register", async (req, res) => {
     const { email, password, name } = req.body;
     if (!email || !password) return res.status(400).json({ message: "Email/password required" });
@@ -33,7 +62,7 @@ export const startServer = async (dbPath, port = 4000) => {
     res.json(tokens);
   });
 
-  // 🔹 LOGIN
+  // LOGIN
   app.post("/login", async (req, res) => {
     const { email, password } = req.body;
     const user = db.users.find((u) => u.email === email);
@@ -46,28 +75,26 @@ export const startServer = async (dbPath, port = 4000) => {
     res.json(tokens);
   });
 
-  // 🔹 AUTO ROUTES
+  // AUTO ROUTES
+  const routeList = [];
   Object.keys(db).forEach((key) => {
     if (["users", "rules"].includes(key)) return;
     const isPrivate = db.rules?.[key] === "private";
-
     const route = express.Router();
 
-    // ✅ GET /key
+    // GET /key
     route.get("/", async (req, res) => {
       const { from, to } = req.query;
       let data = db[key];
-
       if (from && to) {
         const fromNum = Number(from);
         const toNum = Number(to);
         data = data.filter((item) => item.id >= fromNum && item.id <= toNum);
       }
-
       res.json(data);
     });
 
-    // ✅ GET /key/:id
+    // GET /key/:id
     route.get("/:id", async (req, res) => {
       const id = Number(req.params.id);
       const item = db[key].find((i) => i.id === id);
@@ -75,7 +102,7 @@ export const startServer = async (dbPath, port = 4000) => {
       res.json(item);
     });
 
-    // ✅ POST /key
+    // POST /key
     route.post("/", async (req, res) => {
       const newItem = req.body;
       if (!newItem || typeof newItem !== "object") return res.status(400).json({ message: "Invalid body" });
@@ -92,7 +119,28 @@ export const startServer = async (dbPath, port = 4000) => {
     } else {
       app.use(`/${key}`, route);
     }
+
+    // routeList에 추가 (권한 정보 포함)
+    routeList.push({ 
+      key, 
+      count: db[key].length,
+      permission: isPrivate ? "private" : "public"
+    });
   });
 
-  app.listen(port, () => console.log(`✅ db-json-cli running on http://localhost:${port}`));
+  // Index HTML
+  app.get("/", (req, res) => {
+    res.render("index", { routeList, port });
+  });
+
+  app.listen(port, () => {
+    console.log(`✅ db-json-cli Success! ✧*｡٩(ˊᗜˋ*)و✧*｡\n`);
+    console.log(`Index:\nhttp://localhost:${port}/\n\n`);
+
+    console.log("Endpoints:");
+    routeList.forEach((r) => {
+      const badge = r.permission === "private" ? "🔒 PRIVATE" : "🔓 PUBLIC";
+      console.log(`${badge} - http://localhost:${port}/${r.key} (${r.count} items)`);
+    });
+  });
 };

@@ -17,6 +17,14 @@ const argv = yargs(hideBin(process.argv))
     default: "./db.json",
     description: "Path to JSON database file",
   })
+  .option("watch", {
+    alias: "w",
+    type: "boolean",
+    default: false,
+    description: "Watch DB file for changes",
+  })
   .help().argv;
+
+if (argv.watch) process.env.WATCH = "true";
 
 startServer(argv.db, argv.port);
