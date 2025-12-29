@@ -1,0 +1,57 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "test",
+      "name": "홍길동",
+      "password": "$2a$10$aRUDFO7qzoB38sPn4d/9lON24nVo5UIG6T85MhmDK6UtoTIDjsf3i"
+    }
+  ],
+  "rules": {
+    "test1": "public",
+    "test2": "private",
+    "test3": "public"
+  },
+  "test1": [
+    {
+      "id": 1,
+      "message": "good"
+    },
+    {
+      "id": 2,
+      "message": "good"
+    },
+    {
+      "id": 3,
+      "message": "good"
+    }
+  ],
+  "test2": [
+    {
+      "id": 1,
+      "message": "good"
+    },
+    {
+      "id": 2,
+      "message": "good"
+    },
+    {
+      "id": 3,
+      "message": "good"
+    }
+  ],
+  "test3": [
+    {
+      "id": 1,
+      "message": "good"
+    },
+    {
+      "id": 2,
+      "message": "good"
+    },
+    {
+      "id": 3,
+      "message": "good"
+    }
+  ]
+}

@@ -13,7 +13,7 @@ export const comparePassword = async (password, hash) => {
   return bcrypt.compare(password, hash);
 };
 
-export const generateTokens = async (payload) => {
+export const generateTokens = (payload) => {
   const accessToken = jwt.sign(payload, ACCESS_SECRET, { expiresIn: "1h" });
   const refreshToken = jwt.sign(payload, REFRESH_SECRET, { expiresIn: "7d" });
   return { accessToken, refreshToken };
