@@ -17,12 +17,22 @@
     "jwt",
     "mock-server",
     "express",
-    "api"
+    "api",
+    "db-json-cli"
   ],
   "type": "module",
   "bin": {
     "db-json-cli": "./bin/cli.js"
   },
+  "files": [
+    "bin/",
+    "app/",
+    "lib/",
+    ".next/",
+    "next.config.js",
+    "jsconfig.json",
+    "db.json"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",

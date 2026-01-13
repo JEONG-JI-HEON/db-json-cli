@@ -15,7 +15,8 @@ const argv = yargs(hideBin(process.argv))
   .option("watch", { alias: "w", type: "boolean", default: false })
   .help().argv;
 
-const projectRoot = path.join(__dirname, "..");
+// 패키지 내부의 프로젝트 루트 (db-json-cli 자체)
+const packageRoot = path.join(__dirname, "..");
 
 process.env.DB_PATH = path.resolve(argv.db);
 process.env.PORT = argv.port.toString();
@@ -23,8 +24,10 @@ process.env.PORT = argv.port.toString();
 console.log(`✅ db-json-cli running on http://localhost:${argv.port}\n`);
 
 try {
-  execSync(`cd "${projectRoot}" && npx next start -p ${argv.port}`, {
+  // packageRoot에서 Next.js 실행
+  execSync(`npx next start -p ${argv.port}`, {
     stdio: "inherit",
+    cwd: packageRoot,
     env: process.env,
     shell: true,
   });
