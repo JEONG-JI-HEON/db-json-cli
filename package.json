@@ -24,14 +24,13 @@
   "bin": {
     "db-json-cli": "./bin/cli.js"
   },
-  "files": [
+"files": [
     "bin/",
-    ".next/standalone/",
-    ".next/static/"
+    ".next/standalone/"
   ],
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && node scripts/post-build.js",
     "start": "next start",
     "prepublishOnly": "npm run build"
   },
