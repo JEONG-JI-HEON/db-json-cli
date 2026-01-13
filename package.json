@@ -26,12 +26,8 @@
   },
   "files": [
     "bin/",
-    "app/",
-    "lib/",
-    ".next/",
-    "next.config.js",
-    "jsconfig.json",
-    "db.json"
+    ".next/standalone/",
+    ".next/static/"
   ],
   "scripts": {
     "dev": "next dev",
