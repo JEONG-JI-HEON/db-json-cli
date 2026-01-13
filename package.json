@@ -1,6 +1,6 @@
 {
   "name": "db-json-cli",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "license": "MIT",
   "description": "Lightweight JSON-based backend server with JWT authentication and CLI support",
   "repository": {
@@ -24,7 +24,7 @@
   "bin": {
     "db-json-cli": "./bin/cli.js"
   },
-"files": [
+  "files": [
     "bin/",
     ".next/standalone/"
   ],
