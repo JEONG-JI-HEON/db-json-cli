@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getDB, saveDB } from "@/lib/db";
 import { hashPassword, generateTokens } from "@/lib/auth";
 
-export async function POST(request) {
+export const POST = async (request) => {
   try {
     const { email, password, name } = await request.json();
 
@@ -29,4 +29,4 @@ export async function POST(request) {
   } catch (error) {
     return NextResponse.json({ message: "Registration failed" }, { status: 500 });
   }
-}
+};

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDB } from "@/lib/db";
 
-export async function GET() {
+export const GET = async () => {
   try {
     const db = await getDB();
     const routeList = [];
@@ -23,4 +23,4 @@ export async function GET() {
   } catch (error) {
     return NextResponse.json({ message: "Failed to load DB info" }, { status: 500 });
   }
-}
+};

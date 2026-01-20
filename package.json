@@ -35,12 +35,16 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.1.0",
+    "@tanstack/react-query": "^5.90.19",
+    "bcryptjs": "^2.4.3",
+    "fs-extra": "^11.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^0.562.0",
     "next": "^14.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "fs-extra": "^11.2.0",
-    "jsonwebtoken": "^9.0.2",
-    "bcryptjs": "^2.4.3",
+    "sass": "^1.97.2",
     "yargs": "^17.7.2"
   }
 }
