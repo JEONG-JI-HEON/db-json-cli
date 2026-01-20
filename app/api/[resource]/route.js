@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getDB, saveDB } from "@/lib/db";
 import { authMiddleware } from "@/lib/auth";
 
-export async function GET(request, { params }) {
+export const GET = async (request, { params }) => {
   try {
     const { resource } = params;
     const db = await getDB();
@@ -36,9 +36,9 @@ export async function GET(request, { params }) {
   } catch (error) {
     return NextResponse.json({ message: "Failed to fetch data" }, { status: 500 });
   }
-}
+};
 
-export async function POST(request, { params }) {
+export const POST = async (request, { params }) => {
   try {
     const { resource } = params;
     const db = await getDB();

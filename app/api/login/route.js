@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getDB } from "@/lib/db";
 import { comparePassword, generateTokens } from "@/lib/auth";
 
-export async function POST(request) {
+export const POST = async (request) => {
   try {
     const { email, password } = await request.json();
 
@@ -24,4 +24,4 @@ export async function POST(request) {
   } catch (error) {
     return NextResponse.json({ message: "Login failed" }, { status: 500 });
   }
-}
+};
