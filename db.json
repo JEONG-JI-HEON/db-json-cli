@@ -2,20 +2,20 @@
   "users": [
     {
       "id": 1,
-      "email": "test",
+      "email": "user@example.com",
       "name": "홍길동",
-      "password": "$2a$10$aRUDFO7qzoB38sPn4d/9lON24nVo5UIG6T85MhmDK6UtoTIDjsf3i"
+      "password": "$2a$10$j0m0JEIS3XYMzh/byhq8FedeM7m.crG51yD2XwjvgShaoZRS1w9kW"
     }
   ],
   "rules": {
     "test1": "public",
     "test2": "private",
-    "test3": "public"
+    "list": "public"
   },
   "test1": [
     {
       "id": 1,
-      "message": "good"
+      "message": "수정된 메시지"
     },
     {
       "id": 2,
@@ -40,18 +40,66 @@
       "message": "good"
     }
   ],
-  "test3": [
+  "list": [
     {
       "id": 1,
-      "message": "good"
+      "page": 1,
+      "pageSize": 1000000
     },
     {
       "id": 2,
-      "message": "good"
+      "page": 1,
+      "pageSize": 1000000
     },
     {
       "id": 3,
-      "message": "good"
+      "page": 1,
+      "pageSize": 1000000
+    },
+    {
+      "id": 4,
+      "page": 1,
+      "pageSize": 5
+    },
+    {
+      "id": 5,
+      "page": 1,
+      "pageSize": 1000000
+    },
+    {
+      "id": 6,
+      "page": 1,
+      "pageSize": 1000000
+    },
+    {
+      "id": 7,
+      "page": 1,
+      "pageSize": 5
+    },
+    {
+      "id": 8,
+      "page": 1,
+      "pageSize": 5
+    },
+    {
+      "id": 9,
+      "page": 1,
+      "pageSize": 5
+    },
+    {
+      "id": 10,
+      "page": 1,
+      "pageSize": 1000000
+    },
+    {
+      "id": 11,
+      "page": 1,
+      "pageSize": 5
+    },
+    {
+      "id": 12,
+      "page": 1,
+      "pageSize": 1000000
     }
   ]
 }

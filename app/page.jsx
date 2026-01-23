@@ -1,321 +1,272 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { UnlockOutlined, LockOutlined, DownOutlined, RightOutlined } from "@ant-design/icons";
+import styles from "./page.module.scss";
 
-export default function HomePage() {
-  const [routeList, setRouteList] = useState([]);
-  const [port, setPort] = useState(4000);
-  const [loading, setLoading] = useState(true);
-  const [activeEndpoint, setActiveEndpoint] = useState(null);
+const SwaggerApiDocs = () => {
+  const [expandedEndpoints, setExpandedEndpoints] = useState({});
+  const [activeTab, setActiveTab] = useState({});
+  const [authToken, setAuthToken] = useState("");
+  const [responseData, setResponseData] = useState({});
+  const [customBodies, setCustomBodies] = useState({});
 
-  useEffect(() => {
-    fetch("/api/info")
-      .then((res) => res.json())
-      .then((data) => {
-        setRouteList(data.routeList);
-        setPort(data.port);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to load API info:", err);
-        setLoading(false);
-      });
-  }, []);
+  // API 정보 가져오기
+  const { data: apiInfo, isLoading } = useQuery({
+    queryKey: ["apiInfo"],
+    queryFn: async () => {
+      const res = await fetch("/api/info");
+      if (!res.ok) throw new Error("API 정보를 불러오는데 실패했습니다");
+      return res.json();
+    },
+  });
 
-  if (loading) {
-    return (
-      <>
-        <div className="loading-container">Loading...</div>
-        <style jsx>{`
-          .loading-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 100%);
-            color: white;
-            font-size: 1.5rem;
-          }
-        `}</style>
-      </>
-    );
+  // API 요청 mutation
+  const apiMutation = useMutation({
+    mutationFn: async ({ method, path, body }) => {
+      const headers = { "Content-Type": "application/json" };
+      if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
+
+      const options = { method, headers };
+      if (body) options.body = JSON.stringify(body);
+
+      const res = await fetch(`/api${path}`, options);
+      const data = await res.json();
+      return { status: res.status, data };
+    },
+    onSuccess: (result, variables) => {
+      setResponseData((prev) => ({
+        ...prev,
+        [variables.endpointId]: result,
+      }));
+    },
+    onError: (error, variables) => {
+      setResponseData((prev) => ({
+        ...prev,
+        [variables.endpointId]: { status: "error", data: error.message },
+      }));
+    },
+  });
+
+  const toggleEndpoint = (id) => {
+    setExpandedEndpoints((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const setTab = (endpointId, tab) => {
+    setActiveTab((prev) => ({
+      ...prev,
+      [endpointId]: tab,
+    }));
+  };
+
+  const executeRequest = (endpointId, method, path, body = null) => {
+    const finalBody = customBodies[endpointId] ? JSON.parse(customBodies[endpointId]) : body;
+    apiMutation.mutate({ endpointId, method, path, body: finalBody });
+  };
+
+  const handleBodyChange = (endpointId, value) => {
+    setCustomBodies((prev) => ({
+      ...prev,
+      [endpointId]: value,
+    }));
+  };
+
+  if (isLoading) {
+    return <div className={styles["loading-container"]}>로딩 중...</div>;
   }
 
+  const { port, apiSchemas } = apiInfo;
+
+  // apiSchemas를 배열로 변환
+  const endpoints = Object.values(apiSchemas);
+
   return (
-    <>
-      <div className="container">
-        <div className="header">
-          <div className="header-content">
-            <h1>🚀 db-json-cli API</h1>
-            <p>RESTful JSON API Documentation</p>
-          </div>
-        </div>
-
-        <div className="content">
-          <div className="info-box">
-            <h2>📖 API Information</h2>
-            <p>Welcome to the db-json-cli API. This API provides RESTful endpoints for managing your data.</p>
-            <div className="base-url">Base URL: http://localhost:{port}</div>
-          </div>
-
-          <div className="endpoints">
-            <h2>Available Endpoints</h2>
-
-            {routeList.map((r) => (
-              <div key={r.key}>
-                <div
-                  className={`endpoint-item ${activeEndpoint === `${r.key}-get` ? "active" : ""}`}
-                  onClick={() => setActiveEndpoint(activeEndpoint === `${r.key}-get` ? null : `${r.key}-get`)}
-                >
-                  <div className="endpoint-header">
-                    <span className="method-badge method-get">GET</span>
-                    <span className="endpoint-path">/{r.key}</span>
-                    <span className={`permission-badge permission-${r.permission}`}>
-                      {r.permission === "public" ? "🔓" : "🔒"} {r.permission.toUpperCase()}
-                    </span>
-                    <span className="endpoint-count">
-                      {r.count} {r.count === 1 ? "item" : "items"}
-                    </span>
-                  </div>
-                  <div className="endpoint-description">
-                    Retrieve all {r.key} or filter by ID range using ?from=1&to=10
-                  </div>
-                  {activeEndpoint === `${r.key}-get` && (
-                    <div className="endpoint-actions">
-                      <a
-                        href={`/api/${r.key}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="action-btn btn-primary"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Try it out
-                      </a>
-                    </div>
-                  )}
-                </div>
-
-                <div className="endpoint-item">
-                  <div className="endpoint-header">
-                    <span className="method-badge method-get">GET</span>
-                    <span className="endpoint-path">/{r.key}/:id</span>
-                    <span className={`permission-badge permission-${r.permission}`}>
-                      {r.permission === "public" ? "🔓" : "🔒"} {r.permission.toUpperCase()}
-                    </span>
-                  </div>
-                  <div className="endpoint-description">Retrieve a specific item by ID</div>
-                </div>
-
-                <div className="endpoint-item">
-                  <div className="endpoint-header">
-                    <span className="method-badge method-post">POST</span>
-                    <span className="endpoint-path">/{r.key}</span>
-                    <span className={`permission-badge permission-${r.permission}`}>
-                      {r.permission === "public" ? "🔓" : "🔒"} {r.permission.toUpperCase()}
-                    </span>
-                  </div>
-                  <div className="endpoint-description">Create a new item (ID will be auto-generated)</div>
-                </div>
-              </div>
-            ))}
-
-            <div className="endpoint-item">
-              <div className="endpoint-header">
-                <span className="method-badge method-post">POST</span>
-                <span className="endpoint-path">/register</span>
-              </div>
-              <div className="endpoint-description">Register a new user account</div>
-            </div>
-
-            <div className="endpoint-item">
-              <div className="endpoint-header">
-                <span className="method-badge method-post">POST</span>
-                <span className="endpoint-path">/login</span>
-              </div>
-              <div className="endpoint-description">Login and receive access tokens</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="footer">
-          <p>Generated by db-json-cli • Made with ♥</p>
+    <div className={styles.container}>
+      {/* Header */}
+      <div className={styles.header}>
+        <div className={styles["header-content"]}>
+          <h1>🚀 db-json-cli API</h1>
+          <div className={styles["base-url"]}>Base URL: http://localhost:{port}</div>
         </div>
       </div>
 
-      <style jsx>{`
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-        .container {
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-          background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 100%);
-          color: #333;
-          min-height: 100vh;
-        }
-        .header {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          padding: 3rem 2rem;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .header-content {
-          max-width: 1200px;
-          margin: 0 auto;
-        }
-        .header h1 {
-          color: white;
-          font-size: 2.5rem;
-          margin-bottom: 0.5rem;
-          font-weight: 700;
-        }
-        .header p {
-          color: rgba(255, 255, 255, 0.9);
-          font-size: 1.1rem;
-        }
-        .content {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 2rem;
-        }
-        .info-box {
-          background: white;
-          border-radius: 12px;
-          padding: 1.5rem;
-          margin-bottom: 2rem;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        .info-box h2 {
-          color: #667eea;
-          font-size: 1.3rem;
-          margin-bottom: 0.5rem;
-        }
-        .info-box p {
-          color: #666;
-          line-height: 1.6;
-        }
-        .base-url {
-          background: #f8f9fa;
-          padding: 0.5rem 1rem;
-          border-radius: 6px;
-          font-family: "Courier New", monospace;
-          color: #333;
-          display: inline-block;
-          margin-top: 0.5rem;
-        }
-        .endpoints {
-          background: white;
-          border-radius: 12px;
-          padding: 2rem;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        .endpoints h2 {
-          color: #333;
-          font-size: 1.5rem;
-          margin-bottom: 1.5rem;
-          padding-bottom: 0.5rem;
-          border-bottom: 2px solid #667eea;
-        }
-        .endpoint-item {
-          background: #f8f9fa;
-          border: 1px solid #e9ecef;
-          border-radius: 8px;
-          padding: 1.5rem;
-          margin-bottom: 1rem;
-          transition: all 0.3s ease;
-          cursor: pointer;
-        }
-        .endpoint-item:hover,
-        .endpoint-item.active {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
-          border-color: #667eea;
-        }
-        .endpoint-header {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          margin-bottom: 1rem;
-          flex-wrap: wrap;
-        }
-        .method-badge {
-          padding: 0.3rem 0.8rem;
-          border-radius: 4px;
-          font-weight: 600;
-          font-size: 0.75rem;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        .method-get {
-          background: #e7f5ff;
-          color: #1971c2;
-        }
-        .method-post {
-          background: #d3f9d8;
-          color: #2f9e44;
-        }
-        .permission-badge {
-          padding: 0.3rem 0.8rem;
-          border-radius: 4px;
-          font-weight: 600;
-          font-size: 0.75rem;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        .permission-public {
-          background: #d3f9d8;
-          color: #2f9e44;
-        }
-        .permission-private {
-          background: #ffd43b;
-          color: #856404;
-        }
-        .endpoint-path {
-          font-family: "Courier New", monospace;
-          font-size: 1.1rem;
-          color: #333;
-          font-weight: 500;
-        }
-        .endpoint-count {
-          margin-left: auto;
-          background: #667eea;
-          color: white;
-          padding: 0.3rem 0.8rem;
-          border-radius: 20px;
-          font-size: 0.85rem;
-          font-weight: 600;
-        }
-        .endpoint-description {
-          color: #666;
-          line-height: 1.5;
-        }
-        .endpoint-actions {
-          margin-top: 1rem;
-        }
-        .action-btn {
-          padding: 0.5rem 1rem;
-          border-radius: 6px;
-          text-decoration: none;
-          font-size: 0.9rem;
-          font-weight: 500;
-          transition: all 0.2s;
-          display: inline-block;
-        }
-        .btn-primary {
-          background: #667eea;
-          color: white;
-        }
-        .btn-primary:hover {
-          background: #5568d3;
-          transform: translateY(-1px);
-        }
-        .footer {
-          text-align: center;
-          padding: 2rem;
-          color: rgba(255, 255, 255, 0.7);
-          font-size: 0.9rem;
-        }
-      `}</style>
-    </>
+      {/* Auth Token Input */}
+      <div className={styles.content}>
+        <div className={styles["auth-box"]}>
+          <div className={styles["auth-header"]}>
+            <LockOutlined /> Authorization Token (비공개 엔드포인트용)
+          </div>
+          <input
+            type="text"
+            placeholder="Bearer token을 입력하세요..."
+            value={authToken}
+            onChange={(e) => setAuthToken(e.target.value)}
+            className={styles["auth-input"]}
+          />
+        </div>
+
+        {/* Endpoints */}
+        <div className={styles.endpoints}>
+          <h2>📚 API Endpoints</h2>
+          {endpoints.map((endpoint) => {
+            const isExpanded = expandedEndpoints[endpoint.id];
+            const currentTab = activeTab[endpoint.id] || "request";
+            const response = responseData[endpoint.id];
+
+            return (
+              <div key={endpoint.id} className={styles["swagger-endpoint"]}>
+                {/* Endpoint Header */}
+                <div
+                  onClick={() => toggleEndpoint(endpoint.id)}
+                  className={`${styles["swagger-header"]} ${isExpanded ? styles.expanded : ""}`}
+                >
+                  <div className={styles["swagger-header-left"]}>
+                    <span className={isExpanded ? styles["icon-down"] : styles["icon-right"]}>
+                      {isExpanded ? <DownOutlined /> : <RightOutlined />}
+                    </span>
+                    <span className={`${styles["method-badge"]} ${styles[`method-${endpoint.method.toLowerCase()}`]}`}>
+                      {endpoint.method}
+                    </span>
+                    <span className={styles["endpoint-path"]}>{endpoint.path}</span>
+                    {endpoint.auth && (
+                      <span className={`${styles["permission-badge"]} ${styles["permission-private"]}`}>
+                        <LockOutlined /> 인증 필요
+                      </span>
+                    )}
+                    {!endpoint.auth && endpoint.permission && (
+                      <span className={`${styles["permission-badge"]} ${styles["permission-public"]}`}>
+                        <UnlockOutlined /> 공개
+                      </span>
+                    )}
+                  </div>
+                  <span className={styles["endpoint-summary"]}>{endpoint.summary}</span>
+                </div>
+
+                {/* Endpoint Details */}
+                {isExpanded && (
+                  <div className={styles["swagger-details"]}>
+                    <p className={styles["endpoint-description"]}>{endpoint.description}</p>
+
+                    {/* Tabs */}
+                    <div className={styles["swagger-tabs"]}>
+                      <button
+                        onClick={() => setTab(endpoint.id, "request")}
+                        className={`${styles["tab-btn"]} ${currentTab === "request" ? styles.active : ""}`}
+                      >
+                        Request
+                      </button>
+                      <button
+                        onClick={() => setTab(endpoint.id, "responses")}
+                        className={`${styles["tab-btn"]} ${currentTab === "responses" ? styles.active : ""}`}
+                      >
+                        Responses
+                      </button>
+                    </div>
+
+                    {/* Request Tab */}
+                    {currentTab === "request" && (
+                      <div className={styles["tab-content"]}>
+                        {endpoint.parameters && (
+                          <div className={styles["params-section"]}>
+                            <h4>Parameters</h4>
+                            <table className={styles["params-table"]}>
+                              <thead>
+                                <tr>
+                                  <th>Name</th>
+                                  <th>Type</th>
+                                  <th>In</th>
+                                  <th>Description</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {endpoint.parameters.map((param, idx) => (
+                                  <tr key={idx}>
+                                    <td>
+                                      <code>{param.name}</code>
+                                      {param.required && <span className={styles.required}>*</span>}
+                                    </td>
+                                    <td>{param.type}</td>
+                                    <td>{param.in}</td>
+                                    <td>{param.description}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+
+                        {endpoint.requestBody && (
+                          <div className={styles["body-section"]}>
+                            <h4>Request Body</h4>
+                            <textarea
+                              className={styles["body-editor"]}
+                              value={customBodies[endpoint.id] || JSON.stringify(endpoint.requestBody, null, 2)}
+                              onChange={(e) => handleBodyChange(endpoint.id, e.target.value)}
+                              rows={10}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Responses Tab */}
+                    {currentTab === "responses" && (
+                      <div className={styles["tab-content"]}>
+                        {Object.entries(endpoint.responses).map(([code, resp]) => (
+                          <div key={code} className={styles["response-item"]}>
+                            <div className={`${styles["response-header"]} ${styles[`status-${code[0]}xx`]}`}>
+                              {code} - {resp.description}
+                            </div>
+                            <pre className={styles["code-block"]}>{JSON.stringify(resp.example, null, 2)}</pre>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Try It Out Section */}
+                    <div className={styles["try-section"]}>
+                      <button
+                        onClick={() => {
+                          const path = endpoint.path.replace(/:id/, "1");
+                          executeRequest(endpoint.id, endpoint.method, path, endpoint.requestBody);
+                        }}
+                        className={styles["try-btn"]}
+                        disabled={apiMutation.isPending}
+                      >
+                        ▶ {apiMutation.isPending ? "요청 중..." : "테스트하기"}
+                      </button>
+
+                      {/* Response Display */}
+                      {response && (
+                        <div className={styles["response-display"]}>
+                          <h4>Response</h4>
+                          <div
+                            className={`${styles["response-status"]} ${styles[`status-${String(response.status)[0]}xx`]}`}
+                          >
+                            Status: {response.status}
+                          </div>
+                          <pre className={styles["code-block"]}>{JSON.stringify(response.data, null, 2)}</pre>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className={styles.footer}>
+        <p>♥</p>
+      </div>
+    </div>
   );
-}
+};
+
+export default SwaggerApiDocs;
