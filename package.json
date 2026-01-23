@@ -2,7 +2,7 @@
   "name": "db-json-cli",
   "version": "2.0.4",
   "license": "MIT",
-  "description": "Lightweight JSON-based backend server with JWT authentication and CLI support",
+  "description": "JSON-based backend server with JWT authentication and CLI support",
   "repository": {
     "type": "git",
     "url": "https://github.com/JEONG-JI-HEON/db-json-cli.git"
@@ -29,7 +29,7 @@
     ".next/standalone/"
   ],
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 4000",
     "build": "next build && node scripts/post-build.js",
     "start": "next start",
     "prepublishOnly": "npm run build"
