@@ -79,126 +79,10 @@ const SwaggerApiDocs = () => {
     return <div className={styles["loading-container"]}>로딩 중...</div>;
   }
 
-  const { routeList, port } = apiInfo;
+  const { port, apiSchemas } = apiInfo;
 
-  const endpoints = [
-    {
-      id: "register",
-      method: "POST",
-      path: "/register",
-      summary: "새 사용자 계정 등록",
-      description: "이메일과 비밀번호로 새로운 사용자를 등록합니다.",
-      auth: false,
-      requestBody: {
-        email: "user@example.com",
-        password: "securepassword123",
-        name: "John Doe",
-      },
-      responses: {
-        200: {
-          description: "성공적으로 등록됨",
-          example: {
-            accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-            refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-          },
-        },
-        400: { description: "필수 필드 누락", example: { message: "Email/password required" } },
-        409: { description: "이미 존재하는 사용자", example: { message: "User already exists" } },
-      },
-    },
-    {
-      id: "login",
-      method: "POST",
-      path: "/login",
-      summary: "로그인 및 액세스 토큰 받기",
-      description: "이메일과 비밀번호로 로그인하여 JWT 토큰을 받습니다.",
-      auth: false,
-      requestBody: {
-        email: "user@example.com",
-        password: "securepassword123",
-      },
-      responses: {
-        200: {
-          description: "로그인 성공",
-          example: {
-            accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-            refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-          },
-        },
-        401: { description: "잘못된 인증 정보", example: { message: "Invalid credentials" } },
-      },
-    },
-  ];
-
-  // Add resource endpoints dynamically
-  routeList.forEach((r) => {
-    const isPrivate = r.permission === "private";
-
-    endpoints.push({
-      id: `get-${r.key}`,
-      method: "GET",
-      path: `/${r.key}`,
-      summary: `모든 ${r.key} 조회`,
-      description: `모든 ${r.key} 항목을 조회하거나 ID 범위로 필터링합니다.`,
-      auth: isPrivate,
-      permission: r.permission,
-      count: r.count,
-      parameters: [
-        { name: "from", in: "query", type: "number", description: "시작 ID", required: false },
-        { name: "to", in: "query", type: "number", description: "종료 ID", required: false },
-      ],
-      responses: {
-        200: {
-          description: "성공",
-          example: [
-            { id: 1, message: "good" },
-            { id: 2, message: "good" },
-          ],
-        },
-        401: { description: "인증 필요", example: { message: "No token" } },
-      },
-    });
-
-    endpoints.push({
-      id: `get-${r.key}-id`,
-      method: "GET",
-      path: `/${r.key}/:id`,
-      summary: `특정 ${r.key} 조회`,
-      description: `ID로 특정 ${r.key} 항목을 조회합니다.`,
-      auth: isPrivate,
-      permission: r.permission,
-      parameters: [{ name: "id", in: "path", type: "number", description: "항목 ID", required: true }],
-      responses: {
-        200: {
-          description: "성공",
-          example: { id: 1, message: "good" },
-        },
-        401: { description: "인증 필요", example: { message: "No token" } },
-        404: { description: "항목을 찾을 수 없음", example: { message: "Not found" } },
-      },
-    });
-
-    endpoints.push({
-      id: `post-${r.key}`,
-      method: "POST",
-      path: `/${r.key}`,
-      summary: `새 ${r.key} 생성`,
-      description: `새로운 ${r.key} 항목을 생성합니다. ID는 자동으로 생성됩니다.`,
-      auth: isPrivate,
-      permission: r.permission,
-      requestBody: {
-        message: "your message here",
-      },
-      responses: {
-        200: {
-          description: "생성 성공",
-          example: { id: 4, message: "your message here" },
-        },
-        400: { description: "잘못된 요청 본문", example: { message: "Invalid body" } },
-        401: { description: "인증 필요", example: { message: "No token" } },
-      },
-    });
-  });
+  // apiSchemas를 배열로 변환
+  const endpoints = Object.values(apiSchemas);
 
   return (
     <div className={styles.container}>
@@ -355,7 +239,7 @@ const SwaggerApiDocs = () => {
                         className={styles["try-btn"]}
                         disabled={apiMutation.isPending}
                       >
-                        ▶ {apiMutation.isPending ? "요청 중..." : "Try it out"}
+                        ▶ {apiMutation.isPending ? "요청 중..." : "테스트하기"}
                       </button>
 
                       {/* Response Display */}
