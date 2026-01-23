@@ -90,7 +90,6 @@ const SwaggerApiDocs = () => {
       <div className={styles.header}>
         <div className={styles["header-content"]}>
           <h1>🚀 db-json-cli API</h1>
-          <p>RESTful JSON API Documentation - Swagger Style</p>
           <div className={styles["base-url"]}>Base URL: http://localhost:{port}</div>
         </div>
       </div>
@@ -113,7 +112,6 @@ const SwaggerApiDocs = () => {
         {/* Endpoints */}
         <div className={styles.endpoints}>
           <h2>📚 API Endpoints</h2>
-
           {endpoints.map((endpoint) => {
             const isExpanded = expandedEndpoints[endpoint.id];
             const currentTab = activeTab[endpoint.id] || "request";

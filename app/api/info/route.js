@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { getDB } from "@/lib/db";
+
 import { authSchemas, generateResourceSchemas } from "@/lib/api_schema";
+import { getDB } from "@/lib/db";
 
 export const GET = async () => {
   try {
