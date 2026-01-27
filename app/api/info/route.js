@@ -3,14 +3,14 @@ import { authSchemas, generateResourceSchemas } from "@/lib/api_schema";
 import { getDB } from "@/lib/db";
 
 export const GET = async () => {
-  try {
-    console.log(`\n🔍 [API /info] Request received`);
-    console.log(`🔍 [API /info] process.env.DB_PATH = ${process.env.DB_PATH}`);
-    console.log(`🔍 [API /info] process.cwd() = ${process.cwd()}`);
+  process.stdout.write("\n=== API /info called ===\n");
+  process.stdout.write(`DB_PATH: ${process.env.DB_PATH}\n`);
+  process.stdout.write(`CWD: ${process.cwd()}\n\n`);
 
+  try {
     const db = await getDB();
 
-    console.log(`🔍 [API /info] DB loaded. Keys: ${Object.keys(db).join(", ")}`);
+    process.stdout.write(`Loaded DB keys: ${Object.keys(db).join(", ")}\n\n`);
 
     const routeList = Object.keys(db)
       .filter((key) => key !== "users" && key !== "config" && key !== "rules")
@@ -20,12 +20,7 @@ export const GET = async () => {
         permission: db.rules?.[key] || "public",
       }));
 
-    console.log(`🔍 [API /info] RouteList:`, routeList);
-
-    const allSchemas = {
-      ...authSchemas,
-    };
-
+    const allSchemas = { ...authSchemas };
     const resourceSchemas = generateResourceSchemas(routeList);
     resourceSchemas.forEach((schema) => {
       allSchemas[schema.id] = schema;
@@ -37,7 +32,7 @@ export const GET = async () => {
       apiSchemas: allSchemas,
     });
   } catch (error) {
-    console.error(`❌ [API /info] Error:`, error);
+    process.stderr.write(`ERROR: ${error.message}\n`);
     return NextResponse.json({ message: "API 정보를 불러오는데 실패했습니다" }, { status: 500 });
   }
 };
