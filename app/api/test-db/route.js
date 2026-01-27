@@ -1,26 +1,34 @@
 import { NextResponse } from "next/server";
-import { getDB } from "@/lib/db"; // ← 이걸 호출해야 .env.runtime을 읽음
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const findStandaloneRoot = () => {
+  let currentDir = __dirname;
+  while (currentDir !== path.parse(currentDir).root) {
+    if (path.basename(currentDir) === "standalone") {
+      return currentDir;
+    }
+    currentDir = path.dirname(currentDir);
+  }
+  return process.cwd();
+};
 
 export const GET = async () => {
-  try {
-    // ✅ getDB()를 호출하면 loadRuntimeEnv()가 실행됨
-    const db = await getDB();
+  const standaloneRoot = findStandaloneRoot();
+  const dbPath1 = path.join(standaloneRoot, "db.json");
+  const dbPath2 = path.join(process.cwd(), "db.json");
 
-    return NextResponse.json({
-      env_DB_PATH: process.env.DB_PATH,
-      cwd: process.cwd(),
-      db_keys: Object.keys(db),
-      db_users_count: db.users?.length || 0,
-      db_list_count: db.list?.length || 0,
-    });
-  } catch (error) {
-    return NextResponse.json(
-      {
-        error: error.message,
-        env_DB_PATH: process.env.DB_PATH,
-        cwd: process.cwd(),
-      },
-      { status: 500 },
-    );
-  }
+  return NextResponse.json({
+    __dirname,
+    cwd: process.cwd(),
+    standaloneRoot,
+    dbPath1,
+    dbPath1_exists: fs.existsSync(dbPath1),
+    dbPath2,
+    dbPath2_exists: fs.existsSync(dbPath2),
+  });
 };
