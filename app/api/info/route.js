@@ -1,16 +1,31 @@
 import { NextResponse } from "next/server";
 import { authSchemas, generateResourceSchemas } from "@/lib/api_schema";
-import { getDB } from "@/lib/db";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ✅ standalone 폴더 찾기
+const findStandaloneRoot = () => {
+  let currentDir = __dirname;
+  while (currentDir !== path.parse(currentDir).root) {
+    if (path.basename(currentDir) === "standalone") {
+      return currentDir;
+    }
+    currentDir = path.dirname(currentDir);
+  }
+  return process.cwd();
+};
 
 export const GET = async () => {
-  process.stdout.write("\n=== API /info called ===\n");
-  process.stdout.write(`DB_PATH: ${process.env.DB_PATH}\n`);
-  process.stdout.write(`CWD: ${process.cwd()}\n\n`);
-
   try {
-    const db = await getDB();
+    const standaloneRoot = findStandaloneRoot();
+    const dbPath = path.join(standaloneRoot, "db.json");
 
-    process.stdout.write(`Loaded DB keys: ${Object.keys(db).join(", ")}\n\n`);
+    // ✅ lib/db 안 쓰고 직접 읽기
+    const db = JSON.parse(fs.readFileSync(dbPath, "utf-8"));
 
     const routeList = Object.keys(db)
       .filter((key) => key !== "users" && key !== "config" && key !== "rules")
@@ -32,7 +47,6 @@ export const GET = async () => {
       apiSchemas: allSchemas,
     });
   } catch (error) {
-    process.stderr.write(`ERROR: ${error.message}\n`);
-    return NextResponse.json({ message: "API 정보를 불러오는데 실패했습니다" }, { status: 500 });
+    return NextResponse.json({ message: error.message }, { status: 500 });
   }
 };
