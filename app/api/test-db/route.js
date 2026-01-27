@@ -1,34 +1,39 @@
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const findStandaloneRoot = () => {
-  let currentDir = __dirname;
-  while (currentDir !== path.parse(currentDir).root) {
-    if (path.basename(currentDir) === "standalone") {
-      return currentDir;
-    }
-    currentDir = path.dirname(currentDir);
-  }
-  return process.cwd();
-};
 
 export const GET = async () => {
-  const standaloneRoot = findStandaloneRoot();
-  const dbPath1 = path.join(standaloneRoot, "db.json");
-  const dbPath2 = path.join(process.cwd(), "db.json");
+  // ✅ 실제 실행 중인 파일 위치 찾기
+  const stackTrace = new Error().stack;
+  const match = stackTrace.match(/\((.+?):\d+:\d+\)/);
+  const actualFilePath = match ? match[1] : "";
+
+  // 또는 다른 방법들
+  const methods = {
+    // 방법1: 현재 파일에서 상대 경로로 추측
+    method1: path.resolve(process.cwd(), "../../db.json"),
+    method2: path.resolve(process.cwd(), "../../../db.json"),
+    method3: path.resolve(process.cwd(), "../../../../db.json"),
+
+    // 방법2: cwd 기준
+    method4: path.join(process.cwd(), "db.json"),
+
+    actualFilePath,
+  };
+
+  const results = {};
+  Object.keys(methods).forEach((key) => {
+    const p = methods[key];
+    if (typeof p === "string") {
+      results[key] = {
+        path: p,
+        exists: fs.existsSync(p),
+      };
+    }
+  });
 
   return NextResponse.json({
-    __dirname,
     cwd: process.cwd(),
-    standaloneRoot,
-    dbPath1,
-    dbPath1_exists: fs.existsSync(dbPath1),
-    dbPath2,
-    dbPath2_exists: fs.existsSync(dbPath2),
+    results,
   });
 };
