@@ -22,29 +22,24 @@ const argv = yargs(hideBin(process.argv))
   .help().argv;
 
 const standalonePath = path.join(__dirname, "..", ".next", "standalone");
-const dbFullPath = path.resolve(argv.db);
+const userDbPath = path.resolve(argv.db);
 
-// ✅ 환경변수를 파일로 저장
-const envFilePath = path.join(standalonePath, ".env.runtime");
-const envContent = `DB_PATH=${dbFullPath}\nPORT=${argv.port}\nHOSTNAME=0.0.0.0`;
-fs.writeFileSync(envFilePath, envContent, "utf-8");
+// ✅ 사용자 db.json을 standalone 폴더에 복사
+const targetDbPath = path.join(standalonePath, "db.json");
+fs.copyFileSync(userDbPath, targetDbPath);
 
 console.log(`✅ db-json-cli v${version} running on http://localhost:${argv.port}`);
-console.log(`📁 DB Path: ${dbFullPath}`);
-console.log(`💾 Runtime env saved to: ${envFilePath}\n`);
+console.log(`📁 DB copied from: ${userDbPath}`);
+console.log(`📁 DB copied to: ${targetDbPath}\n`);
 
-const childEnv = {
-  ...process.env,
-  DB_PATH: dbFullPath,
-  PORT: argv.port.toString(),
-  HOSTNAME: "0.0.0.0",
-  NODE_ENV: "production",
-};
+process.env.PORT = argv.port.toString();
+process.env.HOSTNAME = "0.0.0.0";
+process.env.NODE_ENV = "production";
 
 const child = spawn("node", [path.join(standalonePath, "server.js")], {
   cwd: standalonePath,
   stdio: "inherit",
-  env: childEnv,
+  env: process.env,
   shell: process.platform === "win32",
 });
 
@@ -54,8 +49,5 @@ child.on("error", (error) => {
 });
 
 child.on("exit", (code) => {
-  if (code !== 0) {
-    console.error(`❌ Server exited with code ${code}`);
-  }
   process.exit(code);
 });
