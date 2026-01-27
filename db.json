@@ -1,0 +1,50 @@
+{
+  "users": [],
+  "rules": {
+    "test1": "public",
+    "test2": "private",
+    "test3": "public"
+  },
+  "test1": [
+    {
+      "id": 1,
+      "message": "good"
+    },
+    {
+      "id": 2,
+      "message": "good"
+    },
+    {
+      "id": 3,
+      "message": "good"
+    }
+  ],
+  "test2": [
+    {
+      "id": 1,
+      "message": "good"
+    },
+    {
+      "id": 2,
+      "message": "good"
+    },
+    {
+      "id": 3,
+      "message": "good"
+    }
+  ],
+  "test3": [
+    {
+      "id": 1,
+      "message": "good"
+    },
+    {
+      "id": 2,
+      "message": "good"
+    },
+    {
+      "id": 3,
+      "message": "good"
+    }
+  ]
+}
