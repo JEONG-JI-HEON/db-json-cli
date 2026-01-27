@@ -1,6 +1,6 @@
 {
   "name": "db-json-cli",
-  "version": "2.1.15",
+  "version": "2.1.16",
   "license": "MIT",
   "description": "JSON-based backend server with JWT authentication and CLI support",
   "repository": {
