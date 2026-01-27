@@ -5,10 +5,12 @@ import { hideBin } from "yargs/helpers";
 import path from "path";
 import { fileURLToPath } from "url";
 import { spawn } from "child_process";
+import fs from "fs"; // ← 이거 추가!
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// package.json에서 버전 읽기
 const packageJsonPath = path.join(__dirname, "..", "package.json");
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
 const version = packageJson.version;
