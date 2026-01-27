@@ -26,7 +26,7 @@
   },
   "files": [
     "bin/",
-    ".next/standalone/"
+    ".next/"
   ],
   "scripts": {
     "dev": "next dev --port 4000",
