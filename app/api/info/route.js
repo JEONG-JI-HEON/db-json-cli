@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
-
 import { authSchemas, generateResourceSchemas } from "@/lib/api_schema";
 import { getDB } from "@/lib/db";
 
 export const GET = async () => {
   try {
+    console.log(`\n🔍 [API /info] Request received`);
+    console.log(`🔍 [API /info] process.env.DB_PATH = ${process.env.DB_PATH}`);
+    console.log(`🔍 [API /info] process.cwd() = ${process.cwd()}`);
+
     const db = await getDB();
+
+    console.log(`🔍 [API /info] DB loaded. Keys: ${Object.keys(db).join(", ")}`);
 
     const routeList = Object.keys(db)
       .filter((key) => key !== "users" && key !== "config" && key !== "rules")
@@ -15,12 +20,12 @@ export const GET = async () => {
         permission: db.rules?.[key] || "public",
       }));
 
-    // 인증 스키마 + 자동 생성된 리소스 스키마
+    console.log(`🔍 [API /info] RouteList:`, routeList);
+
     const allSchemas = {
       ...authSchemas,
     };
 
-    // 리소스 스키마를 배열로 받아서 객체로 변환
     const resourceSchemas = generateResourceSchemas(routeList);
     resourceSchemas.forEach((schema) => {
       allSchemas[schema.id] = schema;
@@ -32,6 +37,7 @@ export const GET = async () => {
       apiSchemas: allSchemas,
     });
   } catch (error) {
+    console.error(`❌ [API /info] Error:`, error);
     return NextResponse.json({ message: "API 정보를 불러오는데 실패했습니다" }, { status: 500 });
   }
 };
