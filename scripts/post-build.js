@@ -11,16 +11,20 @@ const serverFilePath = path.join(standalonePath, "server.js");
 // server.js 파일 읽기
 let serverCode = fs.readFileSync(serverFilePath, "utf-8");
 
-// ✅ 환경변수 로딩 코드 주입 (server.js 맨 앞에)
+// ✅ ES module 방식으로 환경변수 로딩 코드 주입
 const envLoaderCode = `
 // === Runtime ENV Loader ===
-const fs = require('fs');
-const path = require('path');
+import { readFileSync, existsSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename_env = fileURLToPath(import.meta.url);
+const __dirname_env = dirname(__filename_env);
 
 try {
-  const envPath = path.join(__dirname, '.env.runtime');
-  if (fs.existsSync(envPath)) {
-    const content = fs.readFileSync(envPath, 'utf-8');
+  const envPath = join(__dirname_env, '.env.runtime');
+  if (existsSync(envPath)) {
+    const content = readFileSync(envPath, 'utf-8');
     content.split('\\n').forEach(line => {
       const [key, ...valueParts] = line.split('=');
       if (key && valueParts.length > 0) {
@@ -29,6 +33,8 @@ try {
         console.log(\`✅ [Runtime] Loaded \${key}=\${value}\`);
       }
     });
+  } else {
+    console.log(\`⚠️ [Runtime] .env.runtime not found at \${envPath}\`);
   }
 } catch (err) {
   console.error('⚠️ [Runtime] Failed to load .env.runtime:', err.message);
@@ -43,6 +49,7 @@ console.log("   - HOSTNAME:", process.env.HOSTNAME);
 console.log("   - NODE_ENV:", process.env.NODE_ENV);
 console.log("   - cwd:", process.cwd());
 console.log("");
+
 `;
 
 // 코드 앞에 추가
