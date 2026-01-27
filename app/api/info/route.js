@@ -5,9 +5,10 @@ import path from "path";
 
 export const GET = async () => {
   try {
-    const dbPath = path.join(process.cwd(), "db.json");
+    // ✅ 저장된 절대 경로 읽기
+    const pathFilePath = path.join(process.cwd(), ".db-absolute-path.txt");
+    const dbPath = fs.readFileSync(pathFilePath, "utf-8").trim();
 
-    // ✅ lib/db 안 쓰고 직접 읽기
     const db = JSON.parse(fs.readFileSync(dbPath, "utf-8"));
 
     const routeList = Object.keys(db)

@@ -27,22 +27,21 @@ const targetDbPath = path.join(standalonePath, "db.json");
 
 fs.copyFileSync(userDbPath, targetDbPath);
 
-console.log(`✅ db-json-cli v${version} running on http://localhost:${argv.port}`);
-console.log(`📁 DB copied to: ${targetDbPath}\n`);
+// ✅ DB 경로를 파일로 저장 (절대 경로)
+fs.writeFileSync(path.join(standalonePath, ".db-absolute-path.txt"), targetDbPath, "utf-8");
 
-// ✅ cwd를 standalone으로 명시적으로 설정
+console.log(`✅ db-json-cli v${version} running on http://localhost:${argv.port}`);
+console.log(`📁 DB: ${targetDbPath}\n`);
+
 const child = spawn("node", [path.join(standalonePath, "server.js")], {
-  cwd: standalonePath, // ← 이게 핵심
+  cwd: standalonePath,
   stdio: "inherit",
   env: {
     ...process.env,
     PORT: argv.port.toString(),
     HOSTNAME: "0.0.0.0",
-    NODE_ENV: "production",
   },
   shell: process.platform === "win32",
 });
 
-child.on("exit", (code) => {
-  process.exit(code);
-});
+child.on("exit", (code) => process.exit(code));
