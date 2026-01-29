@@ -27,7 +27,7 @@ const userDbPath = path.resolve(argv.db);
 console.log(`✅ db-json-cli v${version} running on http://localhost:${argv.port}`);
 console.log(`📁 DB: ${userDbPath}\n`);
 
-const child = spawn("node", ["wrapper.js"], {
+const child = spawn("node", ["server.js"], {
   cwd: standalonePath,
   stdio: "inherit",
   env: {
@@ -36,7 +36,6 @@ const child = spawn("node", ["wrapper.js"], {
     PORT: argv.port.toString(),
     HOSTNAME: "0.0.0.0",
   },
-  shell: false,
 });
 
 child.on("exit", (code) => process.exit(code));
