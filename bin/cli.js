@@ -27,45 +27,24 @@ const userDbPath = path.resolve(argv.db);
 console.log(`✅ db-json-cli v${version} running on http://localhost:${argv.port}`);
 console.log(`📁 DB: ${userDbPath}\n`);
 
-// ✅ server.js를 런타임에 수정해서 DB 경로 주입
-const serverPath = path.join(standalonePath, "server.js");
-const serverBackupPath = path.join(standalonePath, "server.js.backup");
-
-// 백업이 없으면 원본 백업
-if (!fs.existsSync(serverBackupPath)) {
-  fs.copyFileSync(serverPath, serverBackupPath);
-}
-
-// 백업에서 복원
-fs.copyFileSync(serverBackupPath, serverPath);
-
-// DB 경로를 전역 변수로 주입
-let serverCode = fs.readFileSync(serverPath, "utf-8");
-const dbPathInjection = `
-// === DB PATH INJECTION ===
-global.USER_DB_PATH = "${userDbPath.replace(/\\/g, "\\\\")}";
-console.log("✅ [Server] DB Path injected:", global.USER_DB_PATH);
-// === END DB PATH INJECTION ===
-
-`;
-serverCode = dbPathInjection + serverCode;
-fs.writeFileSync(serverPath, serverCode, "utf-8");
-
-const child = spawn("node", [serverPath], {
-  cwd: standalonePath,
-  stdio: "inherit",
-  env: {
-    ...process.env,
-    PORT: argv.port.toString(),
-    HOSTNAME: "0.0.0.0",
+// ✅ 환경변수로 DB 경로 전달
+const child = spawn(
+  "node",
+  [
+    "-e",
+    `process.env.USER_DB_PATH = "${userDbPath.replace(/\\/g, "\\\\")}"; require("${path.join(standalonePath, "server.js").replace(/\\/g, "\\\\")}")`,
+  ],
+  {
+    cwd: standalonePath,
+    stdio: "inherit",
+    env: {
+      ...process.env,
+      USER_DB_PATH: userDbPath,
+      PORT: argv.port.toString(),
+      HOSTNAME: "0.0.0.0",
+    },
+    shell: true,
   },
-  shell: process.platform === "win32",
-});
+);
 
-child.on("exit", (code) => {
-  // 종료 시 원본 복원
-  if (fs.existsSync(serverBackupPath)) {
-    fs.copyFileSync(serverBackupPath, serverPath);
-  }
-  process.exit(code);
-});
+child.on("exit", (code) => process.exit(code));
