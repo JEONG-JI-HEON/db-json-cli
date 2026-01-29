@@ -24,6 +24,10 @@ const argv = yargs(hideBin(process.argv))
 const standalonePath = path.join(__dirname, "..", ".next", "standalone");
 const userDbPath = path.resolve(argv.db);
 
+// DB 설정 파일 생성
+const dbConfig = { dbPath: userDbPath };
+fs.writeFileSync(path.join(standalonePath, "db-config.json"), JSON.stringify(dbConfig), "utf-8");
+
 console.log(`✅ db-json-cli v${version} running on http://localhost:${argv.port}`);
 console.log(`📁 DB: ${userDbPath}\n`);
 
@@ -32,7 +36,6 @@ const child = spawn("node", ["server.js"], {
   stdio: "inherit",
   env: {
     ...process.env,
-    USER_DB_PATH: userDbPath,
     PORT: argv.port.toString(),
     HOSTNAME: "0.0.0.0",
   },
