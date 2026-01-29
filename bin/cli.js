@@ -27,24 +27,16 @@ const userDbPath = path.resolve(argv.db);
 console.log(`✅ db-json-cli v${version} running on http://localhost:${argv.port}`);
 console.log(`📁 DB: ${userDbPath}\n`);
 
-// ✅ 환경변수로 DB 경로 전달
-const child = spawn(
-  "node",
-  [
-    "-e",
-    `process.env.USER_DB_PATH = "${userDbPath.replace(/\\/g, "\\\\")}"; require("${path.join(standalonePath, "server.js").replace(/\\/g, "\\\\")}")`,
-  ],
-  {
-    cwd: standalonePath,
-    stdio: "inherit",
-    env: {
-      ...process.env,
-      USER_DB_PATH: userDbPath,
-      PORT: argv.port.toString(),
-      HOSTNAME: "0.0.0.0",
-    },
-    shell: true,
+const child = spawn("node", ["wrapper.js"], {
+  cwd: standalonePath,
+  stdio: "inherit",
+  env: {
+    ...process.env,
+    USER_DB_PATH: userDbPath,
+    PORT: argv.port.toString(),
+    HOSTNAME: "0.0.0.0",
   },
-);
+  shell: false,
+});
 
 child.on("exit", (code) => process.exit(code));

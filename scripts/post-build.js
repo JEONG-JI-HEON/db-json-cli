@@ -7,6 +7,24 @@ const __dirname = path.dirname(__filename);
 
 const standalonePath = path.join(__dirname, "..", ".next", "standalone");
 
+// ✅ wrapper 스크립트 생성
+const wrapperCode = `
+const path = require('path');
+
+// 환경변수 확인
+if (!process.env.USER_DB_PATH) {
+  console.error('ERROR: USER_DB_PATH not set');
+  process.exit(1);
+}
+
+console.log('✅ [Wrapper] DB Path:', process.env.USER_DB_PATH);
+
+// server.js 실행
+require('./server.js');
+`;
+
+fs.writeFileSync(path.join(standalonePath, "wrapper.js"), wrapperCode, "utf-8");
+
 // static 폴더 복사
 const staticSource = path.join(__dirname, "..", ".next", "static");
 const staticDest = path.join(standalonePath, ".next", "static");
