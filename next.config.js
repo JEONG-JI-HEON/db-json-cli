@@ -5,10 +5,6 @@ const nextConfig = {
   compiler: {
     removeConsole: false,
   },
-  env: {
-    DB_PATH: process.env.DB_PATH,
-    PORT: process.env.PORT,
-  },
   experimental: {
     serverActions: {
       allowedOrigins: ["localhost:*"],
@@ -16,4 +12,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig; 
+export default nextConfig;
