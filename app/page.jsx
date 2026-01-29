@@ -11,6 +11,7 @@ const SwaggerApiDocs = () => {
   const [authToken, setAuthToken] = useState("");
   const [responseData, setResponseData] = useState({});
   const [customBodies, setCustomBodies] = useState({});
+  const [parameterValues, setParameterValues] = useState({});
 
   // API 정보 가져오기
   const { data: apiInfo, isLoading } = useQuery({
@@ -63,9 +64,52 @@ const SwaggerApiDocs = () => {
     }));
   };
 
-  const executeRequest = (endpointId, method, path, body = null) => {
-    const finalBody = customBodies[endpointId] ? JSON.parse(customBodies[endpointId]) : body;
-    apiMutation.mutate({ endpointId, method, path, body: finalBody });
+  const handleParameterChange = (endpointId, paramName, value) => {
+    setParameterValues((prev) => ({
+      ...prev,
+      [endpointId]: {
+        ...prev[endpointId],
+        [paramName]: value,
+      },
+    }));
+  };
+
+  const buildRequestPath = (endpoint, endpointId) => {
+    let path = endpoint.path;
+    const params = parameterValues[endpointId] || {};
+    const queryParams = [];
+
+    if (endpoint.parameters) {
+      endpoint.parameters.forEach((param) => {
+        const value = params[param.name];
+
+        if (value) {
+          if (param.in === "path") {
+            // path 파라미터 치환 (예: /:id -> /1)
+            path = path.replace(`:${param.name}`, value);
+          } else if (param.in === "query") {
+            // query 파라미터 추가
+            queryParams.push(`${param.name}=${encodeURIComponent(value)}`);
+          }
+        } else if (param.in === "path") {
+          // path 파라미터가 비어있으면 기본값 사용
+          path = path.replace(`:${param.name}`, "1");
+        }
+      });
+    }
+
+    // 쿼리 파라미터 추가
+    if (queryParams.length > 0) {
+      path += `?${queryParams.join("&")}`;
+    }
+
+    return path;
+  };
+
+  const executeRequest = (endpointId, endpoint) => {
+    const path = buildRequestPath(endpoint, endpointId);
+    const finalBody = customBodies[endpointId] ? JSON.parse(customBodies[endpointId]) : endpoint.requestBody;
+    apiMutation.mutate({ endpointId, method: endpoint.method, path, body: finalBody });
   };
 
   const handleBodyChange = (endpointId, value) => {
@@ -80,8 +124,6 @@ const SwaggerApiDocs = () => {
   }
 
   const { port, apiSchemas } = apiInfo;
-
-  // apiSchemas를 배열로 변환
   const endpoints = Object.values(apiSchemas);
 
   return (
@@ -89,7 +131,7 @@ const SwaggerApiDocs = () => {
       {/* Header */}
       <div className={styles.header}>
         <div className={styles["header-content"]}>
-          <h1>🚀 db-json-cli API</h1>
+          <h1>db-json-cli API</h1>
           <div className={styles["base-url"]}>Base URL: http://localhost:{port}</div>
         </div>
       </div>
@@ -98,7 +140,7 @@ const SwaggerApiDocs = () => {
       <div className={styles.content}>
         <div className={styles["auth-box"]}>
           <div className={styles["auth-header"]}>
-            <LockOutlined /> Authorization Token (비공개 엔드포인트용)
+            <LockOutlined /> Authorization Token (인증 필요 API용)
           </div>
           <input
             type="text"
@@ -170,32 +212,30 @@ const SwaggerApiDocs = () => {
                     {/* Request Tab */}
                     {currentTab === "request" && (
                       <div className={styles["tab-content"]}>
+                        {/* ✅ Parameters 입력 필드 */}
                         {endpoint.parameters && (
                           <div className={styles["params-section"]}>
                             <h4>Parameters</h4>
-                            <table className={styles["params-table"]}>
-                              <thead>
-                                <tr>
-                                  <th>Name</th>
-                                  <th>Type</th>
-                                  <th>In</th>
-                                  <th>Description</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {endpoint.parameters.map((param, idx) => (
-                                  <tr key={idx}>
-                                    <td>
-                                      <code>{param.name}</code>
-                                      {param.required && <span className={styles.required}>*</span>}
-                                    </td>
-                                    <td>{param.type}</td>
-                                    <td>{param.in}</td>
-                                    <td>{param.description}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                            <div className={styles["params-inputs"]}>
+                              {endpoint.parameters.map((param, idx) => (
+                                <div key={idx} className={styles["param-input-row"]}>
+                                  <label className={styles["param-label"]}>
+                                    <code>{param.name}</code>
+                                    {param.required && <span className={styles.required}>*</span>}
+                                    <span className={styles["param-meta"]}>
+                                      ({param.type}, {param.in})
+                                    </span>
+                                  </label>
+                                  <input
+                                    type={param.type === "number" ? "number" : "text"}
+                                    placeholder={param.description}
+                                    value={parameterValues[endpoint.id]?.[param.name] || ""}
+                                    onChange={(e) => handleParameterChange(endpoint.id, param.name, e.target.value)}
+                                    className={styles["param-input"]}
+                                  />
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         )}
 
@@ -230,10 +270,7 @@ const SwaggerApiDocs = () => {
                     {/* Try It Out Section */}
                     <div className={styles["try-section"]}>
                       <button
-                        onClick={() => {
-                          const path = endpoint.path.replace(/:id/, "1");
-                          executeRequest(endpoint.id, endpoint.method, path, endpoint.requestBody);
-                        }}
+                        onClick={() => executeRequest(endpoint.id, endpoint)}
                         className={styles["try-btn"]}
                         disabled={apiMutation.isPending}
                       >

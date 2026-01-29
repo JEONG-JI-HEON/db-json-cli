@@ -286,6 +286,54 @@
     margin-bottom: 1rem;
     font-weight: 600;
   }
+
+  .params-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .param-input-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .param-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+
+    code {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: "Consolas", "Monaco", monospace;
+    }
+
+    .param-meta {
+      color: #666;
+      font-size: 12px;
+      font-weight: normal;
+    }
+  }
+
+  .param-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: "Consolas", "Monaco", monospace;
+
+    &:focus {
+      outline: none;
+      border-color: #4caf50;
+    }
+  }
 }
 
 .params-table {
